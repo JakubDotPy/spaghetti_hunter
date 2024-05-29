@@ -23,8 +23,8 @@ Using machine learning and image classification, this tool is able to analyze im
 
 Ensure you have the following installed on your machine:
 
-- Python 3.x: [Download Python](https://www.python.org/downloads/)
-- pip: Python package installer (comes with Python 3.x)
+- Python 3.11: [Download Python](https://www.python.org/downloads/)
+- pip: Python package installer (comes with Python 3.11)
 
 ## Installation
 
