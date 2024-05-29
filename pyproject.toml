@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+# project metadata
+
+[project]
+name = "spaghetti-hunter"
+authors = [
+    { name = "Jakub Cervinka", email = "cervinka.jakub.1989@gmail.com" },
+]
+description = "Using image classification detect 3D print failure."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "typer",
+    "pydantic-settings",
+]
+dynamic = ["version"]
+
+[project.scripts]
+spaghetti-hunter = "spaghetti_hunter.cli:app"
+
+# dev dependencies
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+]
+
+# tooling
+
+[tool.setuptools.dynamic]
+version = { attr = "spaghetti_hunter.__version__" }
+
+[tool.setuptools.packages.find]
+exclude = [
+    "logs*",
+    "tests*",
+]
+
+[tool.ruff]
+line-length = 79
+
+[too.ruff.format]
+quote-stye = "single"
