@@ -113,8 +113,9 @@ def classify(
     display_results(image, boxes)
 
 
-
-@app.command()
+@app.command(
+    deprecated=True  # TODO: implement and remote this guard
+)
 def sort(
         input_dir: Annotated[
             Path,
@@ -145,11 +146,17 @@ def sort(
     log.info(f'input : {input_dir}')
     log.info(f'output: {output_dir}')
 
-    images = (
+    images = [
         img
         for img in input_dir.iterdir()
-        if img.suffix in settings.supported_image_formats
-    )
+        if img.suffix.lower() in settings.supported_image_formats
+    ]
+
+    log.info(f'found {len(images)} supported images')
+
+    # TODO: implement and remote this guard
+    log.warning('Unfortunately, this command is not yet supported')
+    raise typer.Exit()
 
     # TODO: define the processing pipeline
     process_image = lambda x: None

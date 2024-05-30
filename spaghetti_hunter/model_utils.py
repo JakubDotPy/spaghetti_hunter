@@ -16,6 +16,11 @@ log = logging.getLogger(__name__)
 
 def load_model(model_path: Path) -> YOLO:
     """Load model path to a YOLO object."""
+
+    # IDEA: don't have this function as an "app.callback"
+    #   the model may not be needed for every command
+    #   now it just slows the startup of rest of the commands
+
     log.info(f'loading YOLO model from path {model_path!s}')
     model = YOLO(model_path, task="detect")
     log.info('model loaded')
