@@ -1,17 +1,26 @@
 import logging
 import logging.config
-import pathlib
+from pathlib import Path
 
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file='../.env', env_file_encoding='utf-8')
+    supported_image_formats: tuple[str, ...] = ('.jpg', '.jpeg', '.png')
+    confidence_threshold: float = 0.5
+    default_model: Path = Path.cwd() / 'models/large_model.pt'
 
+    model_config = SettingsConfigDict(
+        env_file='.env',
+        env_file_encoding='utf-8',
+    )
+
+
+settings = Settings()
 
 def setup_logging():
-    logs_dir = pathlib.Path.cwd() / 'logs'
+    logs_dir = Path.cwd() / 'logs'
     log_conf = {
         'version'                 : 1,
         'disable_existing_loggers': False,

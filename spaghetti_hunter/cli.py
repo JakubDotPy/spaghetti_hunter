@@ -4,15 +4,18 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+from PIL import Image
 from typing_extensions import Annotated
 
 from spaghetti_hunter import __app_name__
 from spaghetti_hunter import __version__
-from spaghetti_hunter.config import Settings
+from spaghetti_hunter.config import settings
 from spaghetti_hunter.config import setup_logging
+from spaghetti_hunter.model_utils import detect
+from spaghetti_hunter.model_utils import display_results
+from spaghetti_hunter.model_utils import load_model
 
 setup_logging()
-setings = Settings()
 log = logging.getLogger(__name__)
 
 app = typer.Typer(
@@ -37,6 +40,7 @@ def version_callback(value: bool):
     """)
 )
 def main(
+        ctx: typer.Context,
         version: Annotated[
             Optional[bool],
             typer.Option(
@@ -46,8 +50,17 @@ def main(
                 is_eager=True,
             ),
         ] = None,
+        model_path: Annotated[
+            Optional[Path],
+            typer.Option(
+                '--model', '-m',
+                help='Load pretrained model from disk.',
+            ),
+        ] = settings.default_model,
 ):
     _ = version  # to not have unused argument
+    model = load_model(model_path)
+    ctx.obj = model
 
 
 # reassign mains docstring manually, hack that allows f-string
@@ -66,9 +79,20 @@ Detect failed prints using ML and image classification.
 """
 
 
+@app.command(deprecated=True)
+def train():
+    """Train an image classification model.
+
+    This is command is not yet implemented.
+    Use pretrained model instead.
+    """
+    log.warning('train command not yet supported')
+
+
 @app.command()
 def classify(
-        image: Annotated[
+        ctx: typer.Context,
+        image_path: Annotated[
             Path,
             typer.Argument(
                 exists=True,
@@ -78,26 +102,69 @@ def classify(
             )]
 ):
     """Detect failures in provided image."""
-    log.info(f'got file: {image}')
-    # TODO: run the classification
+    log.info(f'got file: {image_path}')
+
+    if image_path.suffix.lower() not in settings.supported_image_formats:
+        raise typer.BadParameter('Image format not supported')
+
+    model = ctx.obj
+    input_image = Image.open(image_path)
+    image, boxes = detect(model, input_image)
+    display_results(image, boxes)
+
 
 
 @app.command()
 def sort(
-        folder: Annotated[
+        input_dir: Annotated[
             Path,
             typer.Argument(
+                help='image directory to be sorted',
                 exists=True,
                 file_okay=False,
                 dir_okay=True,
                 writable=False,
                 readable=True,
                 resolve_path=True,
-            )]
+            )],
+        output_dir: Annotated[
+            Path,
+            typer.Argument(
+                help='output directory with sorted images, will be created if necessary',
+                file_okay=False,
+                dir_okay=True,
+                writable=True,
+                readable=True,
+                resolve_path=True,
+            )] = Path.cwd() / 'output'
 ):
-    """Detect failures in provided image."""
-    log.info(f'got folder: {folder}')
-    # TODO: run the classification
+    """Sort folder of images displaying print failures.
+
+    Create two sub-folders "OK" and "NOK" respectively.
+    """
+    log.info(f'input : {input_dir}')
+    log.info(f'output: {output_dir}')
+
+    images = (
+        img
+        for img in input_dir.iterdir()
+        if img.suffix in settings.supported_image_formats
+    )
+
+    # TODO: define the processing pipeline
+    process_image = lambda x: None
+
+    # TODO: use multiprocessing (img processing is cpu-bound) to sort the images
+    from concurrent.futures import ProcessPoolExecutor
+    with ProcessPoolExecutor() as executor:
+        futures = [
+            executor.submit(process_image, image)
+            for image in images
+        ]
+
+    processed_images = []
+    for future in futures:
+        processed_images.append(future.result())
 
 
 if __name__ == '__main__':

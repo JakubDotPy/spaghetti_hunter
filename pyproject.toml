@@ -15,6 +15,7 @@ requires-python = ">=3.11"
 dependencies = [
     "typer",
     "pydantic-settings",
+    "ultralytics",
 ]
 dynamic = ["version"]
 
