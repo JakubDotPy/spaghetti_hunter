@@ -27,7 +27,7 @@ def load_model(model_path: Path) -> YOLO:
     return model
 
 
-def display_results(image: Image, boxes: list[Boxes]):
+def display_results(image_path: Path, image: Image, boxes: list[Boxes]):
     cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
     for box in boxes:
@@ -54,7 +54,14 @@ def display_results(image: Image, boxes: list[Boxes]):
             2,
         )
 
-    cv2.imwrite("fail_img.jpg", cv2_image)
+    original_filename = image_path.stem
+    # prepare output folder
+    output_dir = Path.cwd() / 'detection_output'
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = str(output_dir / f'{original_filename}_detection.jpg')
+
+    # write result to image
+    cv2.imwrite(output_path, cv2_image)
 
 
 def detect(model: YOLO, image: Image, confidence_threshold: float = settings.confidence_threshold):

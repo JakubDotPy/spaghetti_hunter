@@ -110,7 +110,7 @@ def classify(
     model = ctx.obj
     input_image = Image.open(image_path)
     image, boxes = detect(model, input_image)
-    display_results(image, boxes)
+    display_results(image_path, image, boxes)
 
 
 @app.command(

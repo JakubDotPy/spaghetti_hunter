@@ -1,6 +1,7 @@
 /src_images/
 /logs/
 /data/
+/detection_output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
